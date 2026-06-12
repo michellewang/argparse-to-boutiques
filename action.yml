@@ -18,44 +18,32 @@ runs:
   using: composite
   steps:
 
-    - name: Move to action path
-      run: |
-        cd ${{ github.action_path }}
-      shell: bash
-
     - name: Set up Node.js
       uses: actions/setup-node@v6
 
-    - name: Install styx
+    - name: Create descriptor
       run: |
-        npm install @styx-api/core
-      shell: bash
+        # change directory avoid interference from the user's codebase
+        cd ${{ github.action_path }}
 
-    - name: Install Python dependencies
-      run: |
+        # install Styx
+        npm install @styx-api/core
+
+        # install argdump
         pip install -U pip
         pip install argdump
-      shell: bash
 
-    - name: Create argdump file
-      run: |
-        ls .
-        pwd
+        # create argdump from argparse
         python ./scripts/main.py $LOCATION $PARSER --output argdump.json
+
+        # create boutiques descriptor from argdump
+        npx -y --package @styx-api/cli styx build argdump.json --out styx-out --backend boutiques
+
+        # move descriptor to output path
+        mkdir -p $(dirname $OUTPUT_PATH)
+        mv ./styx-out/boutiques/descriptor.json $OUTPUT_PATH
       env:
         LOCATION: ${{ inputs.location }}
         PARSER: ${{ inputs.parser }}
-      shell: bash
-
-    - name: Create the Boutiques descriptor
-      run: |
-        npx -y --package @styx-api/cli styx build argdump.json --out styx-out --backend boutiques
-      shell: bash
-
-    - name: Move descriptor
-      run: |
-        mkdir -p $(dirname $OUTPUT_PATH)
-        mv ./styx-out/boutiques/descriptor.json $OUTPUT_PATH
-      shell: bash
-      env:
         OUTPUT_PATH: ${{ inputs.output-path }}
+      shell: bash
