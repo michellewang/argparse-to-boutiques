@@ -51,7 +51,8 @@ runs:
       id: sanitize
       run: |
         SANITIZED="${{ inputs.parser-location }}"
-        SANITIZED="${SANITIZED//:/_}"
+        SANITIZED="${SANITIZED//./_}"
+        SANITIZED="${SANITIZED//:/-}"
         echo "branch=argparse-to-boutiques/${SANITIZED}" >> "$GITHUB_OUTPUT"
       shell: bash
 
