@@ -77,11 +77,9 @@ def main(argv=None) -> int:
         "(e.g. mriqc.cli.parser) or a path to a .py file.",
     )
     cli.add_argument(
-        "-f",
-        "--func",
-        default="_build_parser",
+        "parser",
         help="Name of the parser-builder function (called with no args) "
-        "or of the parser object itself. Default: %(default)s",
+        "or of the parser object itself.",
     )
     cli.add_argument(
         "-o",
