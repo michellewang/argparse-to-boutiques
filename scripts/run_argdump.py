@@ -42,7 +42,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-o",
         "--output",
-        "output_path",
+        dest="output_path",
         default="argdump.json",
         type=Path,
         help="Path to write the JSON descriptor to. Parent directories are created if needed. Default: %(default)s",
