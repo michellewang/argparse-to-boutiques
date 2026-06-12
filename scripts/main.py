@@ -86,7 +86,7 @@ def main(argv=None) -> int:
     cli.add_argument(
         "-o",
         "--output",
-        default="dump.json",
+        default="argdump.json",
         help="Path to write the JSON descriptor to. Parent directories are "
         "created if needed. Default: %(default)s",
     )
