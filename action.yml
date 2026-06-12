@@ -1,20 +1,19 @@
 name: Argparse to Boutiques
 description: Create a Boutiques descriptor for a Python CLI based on `argparse.ArgumentParser`
 inputs:
-  parser-location:
-    description: Module path to and name of function that produces the `argparse.ArgumentParser` object. E.g., "my_package.my_module:my_func_name"
+  location:
+    description: Module path to function that produces the `argparse.ArgumentParser` object
     required: true
+  parser:
+    description: Name of the `argparse.ArgumentParser` object-producing function.
+    required: false
+  # parser-location:
+  #   description: Module path to and name of function that produces the `argparse.ArgumentParser` object. E.g., "my_package.my_module:my_func_name"
+  #   required: true
   output-path:
     description: Where the output Boutiques description file should be written
     required: true
-  repository:
-    description: GitHub repository for the package
-    required: false
-    default: ${{ github.repository }}
-  python-version:
-    description: Python version to use
-    required: false
-    default: 3.x
+
 runs:
   using: composite
   steps:
@@ -27,11 +26,6 @@ runs:
         npm install @styx-api/core
       shell: bash
 
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: ${{ inputs.python-version }}
-
     - name: Install Python dependencies
       run: |
         pip install -U pip
@@ -39,9 +33,10 @@ runs:
       shell: bash
 
     - name: Create argdump file
-      run: ./scripts/argdumprun.py $PARSER_LOCATION --output argdump.json
+      run: ./scripts/main.py $LOCATION $PARSER --output argdump.json
       env:
-        PARSER_LOCATION: ${{ inputs.parser-location }}
+        LOCATION: ${{ inputs.location }}
+        PARSER: ${{ inputs.parser }}
       shell: bash
 
     - name: Create the Boutiques descriptor
