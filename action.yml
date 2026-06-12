@@ -49,7 +49,7 @@ runs:
       env:
         LOCATION: ${{ inputs.location }}
         PARSER: ${{ inputs.parser }}
-        OUTPUT_PATH: $GITHUB_WORKSPACE/${{ inputs.output-path }}
+        OUTPUT_PATH: ${{ github.workspace }}/${{ inputs.output-path }}
       shell: bash
 
     - name: Open pull request
