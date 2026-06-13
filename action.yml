@@ -1,8 +1,12 @@
-name: Argparse to Boutiques
-description: Create a Boutiques descriptor for a Python CLI based on `argparse.ArgumentParser`
+name: CLI to Boutiques
+description: Create a Boutiques descriptor for a Python CLI based on `argparse.ArgumentParser` or `click`
 inputs:
+  parser-type:
+    description: Type of parser to serialize. Either "argparse" or "click".
+    required: false
+    default: argparse
   parser-location:
-    description: Module path to and name of function that produces the `argparse.ArgumentParser` object. E.g., "my_package.my_module:my_func_name"
+    description: Module path to and name of function that produces the argparse.ArgumentParser object, or the click.Group or click.Command objects. E.g., "my_package.my_module:my_func_name"
     required: true
   token:
     description: GitHub token with permissions to create pull requests. If using the repository's default GITHUB_TOKEN, ensure that it has write permissions for "contents" and "pull-requests" to create pull requests.
@@ -30,25 +34,35 @@ runs:
         # install Styx
         npm install @styx-api/core
 
-        # install argdump
         pip install -U pip
-        pip install argdump
+        if [[ "$PARSER_TYPE" == "click" ]]; then
+          # install clickdump from GitHub
+          pip install git+https://github.com/michellewang/clickdump.git
 
-        # create argdump from argparse
-        python ./scripts/run_argdump.py --output $ARGDUMP_FILE $PARSER_LOCATION
-        cat $ARGDUMP_FILE
+          # create dump from click command
+          python ./scripts/run_clickdump.py --output $DUMP_FILE $PARSER_LOCATION
+        else
+          # install argdump
+          pip install argdump
 
-        # create boutiques descriptor from argdump
-        npx -y --package @styx-api/cli styx build $ARGDUMP_FILE --out styx-out --backend boutiques
+          # create dump from argparse
+          python ./scripts/run_argdump.py --output $DUMP_FILE $PARSER_LOCATION
+        fi
+
+        cat $DUMP_FILE
+
+        # create boutiques descriptor from dump
+        npx -y --package @styx-api/cli styx build $DUMP_FILE --out styx-out --backend boutiques
 
         # move descriptor to output path
         mkdir -p $(dirname $OUTPUT_PATH)
         mv ./styx-out/boutiques/descriptor.json $OUTPUT_PATH
         cat $OUTPUT_PATH
       env:
+        PARSER_TYPE: ${{ inputs.parser-type }}
         PARSER_LOCATION: ${{ inputs.parser-location }}
         OUTPUT_PATH: ${{ github.workspace }}/${{ inputs.output-path }}
-        ARGDUMP_FILE: argdump.json
+        DUMP_FILE: dump.json
       shell: bash
 
     - name: Sanitize branch name
