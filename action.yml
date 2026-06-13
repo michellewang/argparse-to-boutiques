@@ -84,10 +84,10 @@ runs:
         cat $OUTPUT_PATH
 
         # apply user-specified updates
-        if [[ -n "$UPDATES_FILE" ]]; then
+        if [[ -n "${{ inputs.updates-file }}" ]]; then
           python ./scripts/update_descriptor.py \
             --descriptor $OUTPUT_PATH \
-            --updates $UPDATES_FILE
+            --updates ${{ github.workspace }}/${{ inputs.updates-file }}
           cat $OUTPUT_PATH
         fi
       env:
@@ -97,7 +97,6 @@ runs:
         DUMP_FILE: dump.json
         CLICK_PROG_NAME: ${{ inputs.click-prog-name }}
         CLICK_PARENT_LOCATION: ${{ inputs.click-parent-location }}
-        UPDATES_FILE: ${{ github.workspace }}/${{ inputs.updates-file }}
       shell: bash
 
     - name: Sanitize branch name

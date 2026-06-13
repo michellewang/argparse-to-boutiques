@@ -79,12 +79,8 @@ def main():
 
     with open(args.descriptor) as f:
         descriptor = json.load(f)
-
-    if args.updates is not None:
-        with open(args.updates) as f:
-            updates = json.load(f)
-    else:
-        updates = {}
+    with open(args.updates) as f:
+        updates = json.load(f)
 
     descriptor = apply_updates(descriptor, updates)
 
