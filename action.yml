@@ -3,10 +3,10 @@ description: Create a Boutiques descriptor for a Python CLI based on `argparse.A
 inputs:
   parser-type:
     description: Type of parser to serialize. Either "argparse" or "click".
-    required: false
+    required: true
     default: argparse
   parser-location:
-    description: Module path to and name of function that produces the argparse.ArgumentParser object, or the click.Group or click.Command objects. E.g., "my_package.my_module:my_func_name"
+    description: Module path to and name of function that produces the argparse.ArgumentParser or click.Command objects. E.g., "my_package.my_module:my_func_name"
     required: true
   token:
     description: GitHub token with permissions to create pull requests. If using the repository's default GITHUB_TOKEN, ensure that it has write permissions for "contents" and "pull-requests" to create pull requests.
@@ -14,6 +14,12 @@ inputs:
   output-path:
     description: Where the output Boutiques description file should be written
     required: true
+  click-prog-name:
+    description: Program name to use for the Click parser types. By default this will be the name of the decorated function.
+    required: false
+  click-parent-location:
+    description: Module path to and name of function that produces the click.Group object that contains the click.Command object to serialize. E.g., "my_package.my_module:my_func_name". This is needed for nested commands.
+    required: false
   open-pr:
     description: Whether to open a pull request with the generated descriptor
     required: false
@@ -40,7 +46,14 @@ runs:
           pip install git+https://github.com/michellewang/clickdump.git
 
           # create dump from click command
-          python ./scripts/run_clickdump.py --output $DUMP_FILE $PARSER_LOCATION
+          CLICK_ARGS=()
+          if [[ -n "$CLICK_PROG_NAME" ]]; then
+            CLICK_ARGS+=(--prog "$CLICK_PROG_NAME")
+          fi
+          if [[ -n "$CLICK_PARENT_LOCATION" ]]; then
+            CLICK_ARGS+=(--parent "$CLICK_PARENT_LOCATION")
+          fi
+          python ./scripts/run_clickdump.py --output $DUMP_FILE $PARSER_LOCATION "${CLICK_ARGS[@]}"
         else
           # install argdump
           pip install argdump
@@ -63,6 +76,8 @@ runs:
         PARSER_LOCATION: ${{ inputs.parser-location }}
         OUTPUT_PATH: ${{ github.workspace }}/${{ inputs.output-path }}
         DUMP_FILE: dump.json
+        CLICK_PROG_NAME: ${{ inputs.click-prog-name }}
+        CLICK_PARENT_LOCATION: ${{ inputs.click-parent-location }}
       shell: bash
 
     - name: Sanitize branch name
